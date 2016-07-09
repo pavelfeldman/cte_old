@@ -1,0 +1,35 @@
+<body>
+</body>
+<script>
+WebInspector = {}
+InspectorFrontendHost = {
+    copyText: function() {}
+}
+</script>
+<script src="utilities.js"></script>
+<script src="KeyboardShortcut.js"></script>
+<script src="TextEditorModel.js"></script>
+<script src="TextEditor.js"></script>
+<script src="TextEditorHighlighter.js"></script>
+<script src="SourceCSSTokenizer.js"></script>
+<script src="SourceJavaScriptTokenizer.js"></script>
+<script src="SourceHTMLTokenizer.js"></script>
+<link rel="stylesheet" type="text/css" href="textEditor.css"></link>
+<script>
+
+function init()
+{
+    var textModel = new WebInspector.TextEditorModel();
+    var editor = new WebInspector.TextEditor(textModel, "mac-leopard");
+    editor.mimeType = "text/javascript";
+    editor.readOnly = false;
+    document.body.appendChild(editor.element);
+    fetch("TextEditor.js").then(result => result.text()).then(text => textModel.setText(null, text));
+    window.editor = editor;
+}
+
+init();
+
+window.onresize = () => window.editor.updateCanvasSize();
+
+</script>
