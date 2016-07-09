@@ -160,7 +160,7 @@ WebInspector.TextEditor.prototype = {
         if (element) {
             divDecoration = { element: element };
             this.element.appendChild(element);
-    
+
             this._textModel.setAttribute(lineNumber, "div-decoration", divDecoration);
         }
 
@@ -544,7 +544,7 @@ WebInspector.TextEditor.prototype = {
         var location = this._caretForMouseEvent(e);
 
         if (e.offsetX < this._lineNumberWidth && this._lineNumberDecorator) {
-            if (this._lineNumberDecorator.mouseDown(location.line, e))            
+            if (this._lineNumberDecorator.mouseDown(location.line, e))
                 return;
         }
 
@@ -874,14 +874,8 @@ WebInspector.TextEditor.prototype = {
         var range = this._selection.range();
         var text = this._textModel.copyRange(range);
 
-        function delayCopy()
-        {
-            InspectorFrontendHost.copyText(text);
-        }
-
-        setTimeout(delayCopy);
-        if (e)
-            e.preventDefault();
+        e.clipboardData.setData('text/plain', text);
+        e.preventDefault();
     },
 
     _beforeCut: function(e)
