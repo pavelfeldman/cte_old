@@ -79,9 +79,7 @@ WebInspector.TextEditor = function(textModel, platform)
     this._ctx = this._canvas.getContext("2d", {alpha: false});
     this._selection = new WebInspector.TextSelectionModel(this._selectionChanged.bind(this));
 
-    this._isMacTiger = platform === "mac-tiger";
-    this._isMacLeopard = platform === "mac-leopard";
-    this._isMac = this._isMacTiger || this._isMacLeopard;
+    this._isMac = platform === "mac";
     this._isWin = platform === "windows";
 
     this._initFont();
@@ -294,7 +292,7 @@ WebInspector.TextEditor.prototype = {
         var guardedEndLine = Math.min(this._textModel.linesCount, endLine + 1);
         var newMaximum = false;
         for (var i = startLine; i < guardedEndLine; ++i) {
-            var lineWidth = this._ctx.measureText(this._textModel.line(i)).width;
+            var lineWidth = this._measureText(this._textModel.line(i)).width;
             if (lineWidth > this._textWidth) {
                 this._textWidth = lineWidth;
                 this._longestLineNumber = i;
@@ -306,7 +304,7 @@ WebInspector.TextEditor.prototype = {
             this._textWidth = 0;
             this._longestLineNumber = 0;
             for (var i = 0; i < this._textModel.linesCount; ++i) {
-                var lineWidth = this._ctx.measureText(this._textModel.line(i)).width;
+                var lineWidth = this._measureText(this._textModel.line(i)).width;
                 if (lineWidth > this._textWidth) {
                     this._textWidth = lineWidth;
                     this._longestLineNumber = i;
@@ -601,23 +599,30 @@ WebInspector.TextEditor.prototype = {
         return { line: lineNumber, column: this._columnForOffset(lineNumber, offset) };
     },
 
+    _measureText: function(text)
+    {
+        if (!this._charWidth)
+            this._charWidth = this._ctx.measureText("0").width;
+        return { width: this._charWidth * text.length };
+    },
+
     _columnForOffset: function(lineNumber, offset)
     {
         var length = 0;
         var line = this._textModel.line(lineNumber);
 
         // First pretend it is monospace to get a quick guess.
-        var charWidth = this._ctx.measureText("a").width;
+        var charWidth = this._measureText("a").width;
         var index = Math.floor(offset / charWidth);
-        var indexOffset = this._ctx.measureText(line.substring(0, index)).width;
-        if (offset >= indexOffset && index < line.length && offset < indexOffset + this._ctx.measureText(line.charAt(index)).width)
+        var indexOffset = this._measureText(line.substring(0, index)).width;
+        if (offset >= indexOffset && index < line.length && offset < indexOffset + this._measureText(line.charAt(index)).width)
             return index;
 
         // Fallback to non-monospace.
         var delta = indexOffset < offset ? 1 : -1;
         while (index >=0 && index < line.length) {
             index += delta;
-            indexOffset += delta * this._ctx.measureText(line.charAt(index)).width;
+            indexOffset += delta * this._measureText(line.charAt(index)).width;
             if (offset >= indexOffset && offset < indexOffset + charWidth)
                 return index;
         }
@@ -627,7 +632,7 @@ WebInspector.TextEditor.prototype = {
     _columnToOffset: function(lineNumber, column)
     {
         var line = this._textModel.line(lineNumber);
-        return this._ctx.measureText(line.substring(0, column)).width;
+        return this._measureText(line.substring(0, column)).width;
     },
 
     _keyDown: function(e)
@@ -961,7 +966,7 @@ WebInspector.TextEditor.prototype = {
                 this._font = (this._fontSize + 1) + "px Courier New";
         }
         this._ctx.font = this._font;
-        this._digitWidth = this._ctx.measureText("0").width;
+        this._digitWidth = this._measureText("0").width;
 
         this._textLineHeight = Math.floor(this._fontSize * 1.4);
         this._cursor.setTextLineHeight(this._textLineHeight);

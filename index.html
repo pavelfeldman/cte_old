@@ -14,10 +14,21 @@ WebInspector = {}
 <link rel="stylesheet" type="text/css" href="textEditor.css"></link>
 <script>
 
+function platform()
+{
+    var match = navigator.userAgent.match(/Windows NT/);
+    if (match)
+        return "windows";
+    match = navigator.userAgent.match(/Mac OS X/);
+    if (match)
+        return "mac";
+    return "linux";
+}
+
 function init()
 {
     var textModel = new WebInspector.TextEditorModel();
-    var editor = new WebInspector.TextEditor(textModel, "mac-leopard");
+    var editor = new WebInspector.TextEditor(textModel, platform());
     editor.mimeType = "text/javascript";
     editor.readOnly = false;
     document.body.appendChild(editor.element);
